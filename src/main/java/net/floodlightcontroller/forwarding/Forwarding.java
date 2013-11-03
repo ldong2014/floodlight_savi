@@ -46,6 +46,8 @@ import net.floodlightcontroller.routing.IRoutingService;
 import net.floodlightcontroller.routing.Route;
 import net.floodlightcontroller.topology.ITopologyService;
 
+import org.openflow.protocol.OFBindingTable;
+import org.openflow.protocol.OFBindingTable.BindingStatus;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketIn;
@@ -71,6 +73,24 @@ public class Forwarding extends ForwardingBase implements IFloodlightModule {
                                           FloodlightContext cntx) {
         Ethernet eth = IFloodlightProviderService.bcStore.get(cntx,
                                    IFloodlightProviderService.CONTEXT_PI_PAYLOAD);
+
+        // sdn savi
+        OFBindingTable BindingTable =new OFBindingTable().Init();
+        if(pi.getType()==OFType.DHCP_REQUEST||pi.getType()==OFType.DHCP_REPLY){
+        	//pi的结构部分理解的还不透彻，还需要再想想。怎么从pi里解析出mac地址等等。
+        	BindingTable.AddToBindingTable(MACAddress, IPAddress, pi.getInPort());
+        }
+        // 2. read pi，judge whether it is DHCP request or reply
+            // if yes, new a binding-table node, add it to bing-table
+            // if not, do nothing
+        if(BindingTable.CheckStatus(MACAddress, IPAddress, pi.getInPort())==BindingStatus.NO_MATCH){
+        	doDropFlow(sw, pi, decision, cntx);
+            return Command.CONTINUE;
+        }
+        // 3. check if pi is permitted by binding-table
+            // if yes, do nothing
+            // if no, drop
+
 
         // If a decision has been made we obey it
         // otherwise we just forward

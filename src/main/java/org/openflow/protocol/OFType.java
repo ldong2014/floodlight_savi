@@ -137,7 +137,17 @@ public enum OFType {
                                     @Override
                                     public OFMessage instantiate() {
                                         return new OFQueueGetConfigReply();
-                                    }});
+                                    }}),
+    DHCP_REQUEST		(22, OFDHCPRequest.class, new Instantiable<OFMessage>() {
+        					@Override
+        					public OFMessage instantiate() {
+        						return new OFDHCPRequest();
+        					}}),
+    DHCP_REPLY			(23, OFDHCPReply.class, new Instantiable<OFMessage>() {
+							@Override
+							public OFMessage instantiate() {
+								return new OFDHCPReply();
+							}});
 
     static OFType[] mapping;
 
